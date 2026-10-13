@@ -1,0 +1,17 @@
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+grafana:
+  adminPassword: admin123
+
+alertmanager:
+  config:
+    route:
+      receiver: demo-webhook
+      group_wait: 10s
+    receivers:
+      - name: demo-webhook
+        webhook_configs:
+          - url: "https://webhook.site/560655d1-c463-424c-b550-44861a1a4720"

@@ -1,0 +1,11 @@
+#!/bin/sh
+echo "GitHook Shield: scanning staged changes..."
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "gitleaks not installed. Install it first."
+  exit 1
+fi
+if ! gitleaks protect --staged --redact -v; then
+  echo "Commit blocked: possible secret detected."
+  exit 1
+fi
+echo "No secrets found."

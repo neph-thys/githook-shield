@@ -1,0 +1,39 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: githook-shield
+  namespace: githook-shield
+spec:
+  selector:
+    matchLabels: { app: githook-shield }
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: githook-shield-alerts
+  namespace: githook-shield
+spec:
+  groups:
+    - name: githook-shield
+      rules:
+        - alert: AppDown
+          expr: up{namespace="githook-shield"} == 0
+          for: 1m
+          labels: { severity: critical }
+          annotations:
+            summary: "GitHook Shield app is down"
+        - alert: PodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="githook-shield"}[5m]) > 2
+          labels: { severity: warning }
+          annotations:
+            summary: "Pod is restarting repeatedly"
+        - alert: DeploymentReplicasMismatch
+          expr: kube_deployment_status_replicas_available{namespace="githook-shield"} < 2
+          for: 2m
+          labels: { severity: warning }
+          annotations:
+            summary: "Fewer replicas available than desired"
